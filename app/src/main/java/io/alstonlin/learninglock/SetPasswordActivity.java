@@ -9,7 +9,10 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.datatype.Duration;
 
 import me.zhanghai.android.patternlock.PatternUtils;
 import me.zhanghai.android.patternlock.PatternView;
@@ -20,20 +23,24 @@ public class SetPasswordActivity extends SetPatternActivity {
     Context context = this;
     public List<PatternView.Cell> savedPattern;
     int nodesClicked = 0;
-    double[] timeAtClick;
+    ArrayList<Double> timeAtClick = new ArrayList<Double>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        PatternView setPasswordPatternView = (PatternView) findViewById(R.id.setPasswordPattern);
         setContentView(R.layout.activity_set_password);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         if (savedPattern == null){
             //prompt user to create new one
+            //Snackbar.make(setPasswordPatternView,"Please create a passcode", Snackbar.LENGTH_LONG);
+
         }
         else{
             //ask user if new pattern is desired
+
         }
 
         final PatternView patternView = (PatternView) findViewById(R.id.setPasswordPattern);
@@ -50,7 +57,7 @@ public class SetPasswordActivity extends SetPatternActivity {
             @Override
             public void onPatternCellAdded(List<PatternView.Cell> pattern) {
                 //called each time a new node is touched; get value of times at each
-                timeAtClick[nodesClicked] = ((double) System.currentTimeMillis());
+                timeAtClick.add(((double) System.currentTimeMillis()));
                 nodesClicked++;
 
             }
@@ -58,12 +65,17 @@ public class SetPasswordActivity extends SetPatternActivity {
             @Override
             public void onPatternDetected(List<PatternView.Cell> pattern) {
                 //returns size of pattern (nodes clicked)
-                LockScreenML.setup(context);
+                if (savedPattern == null)
+                    savedPattern = pattern;
                 nodesClicked = 0;
                 patternView.clearPattern();
 
-                savedPattern = pattern;
-
+                boolean isValidPasscode = true;
+                if (pattern != savedPattern)
+                    isValidPasscode = false;
+                //double[] timeAtClickArray = new double[timeAtClick.size()-1];
+                //timeAtClickArray = timeAtClick.toArray.();
+                LockScreenML.getInstance().addEntry(elapsedTimesArray(timeAtClick), isValidPasscode);
 
             }
         });
@@ -78,11 +90,11 @@ public class SetPasswordActivity extends SetPatternActivity {
         });
     }
 
-    public double[] elapsedTimesArray (double[] timeAtClick){
+    public double[] elapsedTimesArray (ArrayList<Double> timeAtClick){
 
-        double[] elapsedTimes = new double[timeAtClick.length-1];
-        for (int i = 0; i < timeAtClick.length - 1; i++) {
-            elapsedTimes[i] = timeAtClick[i+1] - timeAtClick[i];
+        double[] elapsedTimes = new double[timeAtClick.size()-1];
+        for (int i = 0; i < timeAtClick.size() - 1; i++) {
+            elapsedTimes[i] = timeAtClick.get(i+1) - timeAtClick.get(i);
         }
 
         return elapsedTimes;
