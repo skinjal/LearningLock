@@ -36,7 +36,7 @@ public class SetPasswordActivity extends SetPatternActivity {
 
             @Override
             public void onPatternCellAdded(List<PatternView.Cell> pattern) {
-                
+
             }
 
             @Override
