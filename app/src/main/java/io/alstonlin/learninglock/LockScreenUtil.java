@@ -11,7 +11,6 @@ import android.view.WindowManager.LayoutParams;
 
 public class LockScreenUtil {
 
-
     private OverlayDialog mOverlayDialog;
     private OnLockStatusChangedListener mLockStatusChangedListener;
 
@@ -48,8 +47,7 @@ public class LockScreenUtil {
         if (mOverlayDialog != null) {
             mOverlayDialog.dismiss();
             mOverlayDialog = null;
-            if(mLockStatusChangedListener!=null)
-            {
+            if(mLockStatusChangedListener!=null) {
                 mLockStatusChangedListener.onLockStatusChanged(false);
             }
         }
@@ -68,13 +66,11 @@ public class LockScreenUtil {
             params.height = 0;
             params.gravity = Gravity.BOTTOM;
             getWindow().setAttributes(params);
-            getWindow().setFlags(LayoutParams.FLAG_SHOW_WHEN_LOCKED | LayoutParams.FLAG_NOT_TOUCH_MODAL,
-                    0xffffff);
+            getWindow().setFlags(LayoutParams.FLAG_SHOW_WHEN_LOCKED | LayoutParams.FLAG_NOT_TOUCH_MODAL, 0xffffff);
             setOwnerActivity(activity);
             setCancelable(false);
         }
 
-        // consume touch events
         public final boolean dispatchTouchEvent(MotionEvent motionevent) {
             return true;
         }
