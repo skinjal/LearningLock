@@ -13,7 +13,6 @@ import org.encog.neural.networks.training.Train;
 import org.encog.neural.networks.training.propagation.resilient.ResilientPropagation;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -25,12 +24,15 @@ public class LockScreenML {
     public static final String FILENAME = "learning_lock_saved.eg";
     private static final double OUTPUT_THRESHOLD = 0.5;
     private static final double TRAIN_CONVERGENCE_THRESHOLD = 0.01;
+    // Singleton
+    private static LockScreenML instance;
     // Fields
     private transient Context context;
     private ArrayList<double[]> valid;
     private ArrayList<double[]> invalid;
     private BasicNetwork network;
     private int inputLayerCount;
+
 
     private LockScreenML(Context context, int inputLayerCount){
         this.context = context;
@@ -46,10 +48,37 @@ public class LockScreenML {
     }
 
     /**
+     * Gets the Singleton of this class. Note that setup() must be called first before this.
+     * @return The Singleton instance
+     */
+    public static LockScreenML getInstance(){
+        if (instance == null) throw new IllegalStateException("setup() must be called before getInstance()");
+        return instance;
+    }
+
+    /**
+     * This function must be called before getInstance() can be called, and this function may not
+     * be called twice.
+     * @param context The context this is being created in
+     * @param inputLayerCount The size of the data array entry that it will learn from. Does not
+     *                        matter if being loaded from file
+     * @return If it was loaded from a file
+     */
+    public static boolean setup(Context context, int inputLayerCount){
+        if (instance != null) throw new IllegalStateException("Cannot call setup() twice");
+        instance = loadFromFile(context);
+        if (instance == null) { // First time
+            instance = new LockScreenML(context, inputLayerCount);
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Attemps to load from file if exists.
      * @return The loaded object from file, or null if does not exist
      */
-    public static LockScreenML loadFromFile(Context context){
+    private static LockScreenML loadFromFile(Context context){
         FileInputStream fis = null;
         ObjectInputStream is = null;
         LockScreenML result = null;
