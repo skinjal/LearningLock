@@ -96,10 +96,10 @@ public class LockScreenML implements Serializable{
 
     /**
      * Sets the array size of the data sent to the network to train. Must be called before the
-     * network is actually trained and used (TIMES)
+     * network is actually trained and used
      * @param inputLayerCount The value
      */
-    private void setInputLayerCount(int inputLayerCount){
+    public void setInputLayerCount(int inputLayerCount){
         this.inputLayerCount = inputLayerCount;
         this.valid = new ArrayList<>();
         this.invalid = new ArrayList<>();

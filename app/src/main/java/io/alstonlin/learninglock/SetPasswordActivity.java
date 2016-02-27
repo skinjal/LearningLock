@@ -45,6 +45,7 @@ public class SetPasswordActivity extends SetPatternActivity {
         }
         else{
             //ask user if new pattern is desired
+            savedPattern = null;
 
         }
 
@@ -70,8 +71,11 @@ public class SetPasswordActivity extends SetPatternActivity {
             @Override
             public void onPatternDetected(List<PatternView.Cell> pattern) {
                 //returns size of pattern (nodes clicked)
-                if (savedPattern == null)
+                if (savedPattern == null){
                     savedPattern = pattern;
+                    LockScreenML.getInstance().setInputLayerCount(elapsedTimesArray((timeAtClick)).length);
+                }
+
                 nodesClicked = 0;
                 patternView.clearPattern();
 
