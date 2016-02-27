@@ -10,9 +10,12 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.PopupWindow;
+
 
 public class LockScreenActivity extends Activity implements OnLockStatusChangedListener {
 
+    private PopupWindow passcodeWindow;
     private Button btnUnlock;
     private Button btnEdit;
     private LockScreenUtil mLockscreenUtil;
@@ -107,6 +110,11 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
         return super.dispatchKeyEvent(event);
     }
 
+    private void handleSuspectEntry(double[][] times){
+        // Starts Keypad Activity
+        Intent intent = new Intent(this, KeypadActivity.class);
+        startActivityForResult(intent, 1);
+    }
 
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP
@@ -159,4 +167,14 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
         finish();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1) {
+            // Compares to actual pin value
+            if (resultCode == Activity.RESULT_OK){
+                String result = data.getStringExtra(KeypadActivity.PASSCODE_VALUE);
+                // TODO: Actually compare
+            }
+        }
+    }
 }
