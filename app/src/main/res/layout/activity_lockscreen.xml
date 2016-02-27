@@ -16,4 +16,9 @@
         android:text="Unlock"
         android:textAppearance="@android:style/TextAppearance.Large" />
 
+    <me.zhanghai.android.patternlock.PatternView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+
 </RelativeLayout>
