@@ -9,6 +9,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -23,7 +24,7 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
     private Button btnUnlock;
     private Button btnEdit;
     private LockScreenUtil lockscreenUtil;
-
+    private double[] delayTimes; // To store for startActivityForResult
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -178,7 +179,9 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
                 }
                 // Compares
                 if (result.equals(actual)){
-
+                    LockScreenML.getInstance().addEntry(delayTimes, true);
+                } else {
+                    Toast.makeText(this, "Wrong PIN!", Toast.LENGTH_LONG).show();
                 }
             }
         }

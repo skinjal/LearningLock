@@ -118,7 +118,16 @@ public class LockScreenML implements Serializable{
     public void addEntry(double[] data, boolean validity){
         ArrayList<double[]> list = validity ? valid : invalid;
         list.add(data);
-        train((double[][])valid.toArray(),(double[][])invalid.toArray());
+        // Converts to a 2d array
+        double[][] validArray = new double[valid.size()][inputLayerCount];
+        double[][] invalidArray = new double[valid.size()][inputLayerCount];
+        for (int i = 0; i < valid.size(); i++){
+            validArray[i] = valid.get(i);
+        }
+        for (int i = 0; i < invalid.size(); i++){
+            invalidArray[i] = invalid.get(i);
+        }
+        train(validArray, invalidArray);
     }
 
     /**
