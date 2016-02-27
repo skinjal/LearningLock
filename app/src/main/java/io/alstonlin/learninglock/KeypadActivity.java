@@ -11,6 +11,7 @@ import java.util.ArrayList;
 public class KeypadActivity extends Activity{
 
     public static final String PASSCODE_VALUE = "PasscodeValue";
+    public static final int ACTIVITY_CODE = 9001;
     //Fields
     private ArrayList<Character> pin;
 
@@ -78,7 +79,7 @@ public class KeypadActivity extends Activity{
     }
 
     public void clickDone(View v){
-        Intent result = new Intent(getCallingActivity().getClassName());
+        Intent result = new Intent();
         // Creates and puts String as result
         StringBuilder builder = new StringBuilder();
         for (char c : pin){
