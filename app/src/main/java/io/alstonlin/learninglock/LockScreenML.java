@@ -34,17 +34,10 @@ public class LockScreenML {
     private int inputLayerCount;
 
 
-    private LockScreenML(Context context, int inputLayerCount){
+    private LockScreenML(Context context){
         this.context = context;
-        this.inputLayerCount = inputLayerCount;
+        this.inputLayerCount = -1;
         this.network = new BasicNetwork();
-        this.valid = new ArrayList<>();
-        this.invalid = new ArrayList<>();
-        this.network.addLayer(new BasicLayer(new ActivationSigmoid(), true, inputLayerCount));
-        this.network.addLayer(new BasicLayer(new ActivationSigmoid(), true, inputLayerCount));
-        this.network.addLayer(new BasicLayer(new ActivationSigmoid(), true, 1));
-        this.network.getStructure().finalizeStructure();
-        this.network.reset();
     }
 
     /**
@@ -60,15 +53,13 @@ public class LockScreenML {
      * This function must be called before getInstance() can be called, and this function may not
      * be called twice.
      * @param context The context this is being created in
-     * @param inputLayerCount The size of the data array entry that it will learn from. Does not
-     *                        matter if being loaded from file
      * @return If it was loaded from a file
      */
-    public static boolean setup(Context context, int inputLayerCount){
+    public static boolean setup(Context context){
         if (instance != null) throw new IllegalStateException("Cannot call setup() twice");
         instance = loadFromFile(context);
         if (instance == null) { // First time
-            instance = new LockScreenML(context, inputLayerCount);
+            instance = new LockScreenML(context);
             return false;
         }
         return true;
@@ -99,6 +90,22 @@ public class LockScreenML {
             }
         }
         return result;
+    }
+
+    /**
+     * Sets the array size of the data sent to the network to train. Must be called before the
+     * network is actually trained and used
+     * @param inputLayerCount The value
+     */
+    private void setInputLayerCount(int inputLayerCount){
+        this.inputLayerCount = inputLayerCount;
+        this.valid = new ArrayList<>();
+        this.invalid = new ArrayList<>();
+        this.network.addLayer(new BasicLayer(new ActivationSigmoid(), true, inputLayerCount));
+        this.network.addLayer(new BasicLayer(new ActivationSigmoid(), true, inputLayerCount));
+        this.network.addLayer(new BasicLayer(new ActivationSigmoid(), true, 1));
+        this.network.getStructure().finalizeStructure();
+        this.network.reset();
     }
 
     /**
