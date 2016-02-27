@@ -24,7 +24,9 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
                         | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
                         | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                         | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+
         );
+
         setContentView(R.layout.activity_lockscreen);
 
         mLockscreenUtil = new LockScreenUtil();
@@ -32,17 +34,17 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
         btnUnlock.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                unlockHomeButton();
+                unlockScreen();
             }
         });
 
         if (getIntent() != null && getIntent().hasExtra("kill") && getIntent().getExtras().getInt("kill") == 1) {
             enableKeyguard();
-            unlockHomeButton();
+            unlockScreen();
         } else {
             try {
                 disableKeyguard();
-                lockHomeButton();
+                lockScreen();
                 startService(new Intent(this, LockScreenService.class));
                 StateListener phoneStateListener = new StateListener();
                 TelephonyManager telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
@@ -58,7 +60,7 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
             super.onCallStateChanged(state, incomingNumber);
             switch (state) {
                 case TelephonyManager.CALL_STATE_RINGING:
-                    unlockHomeButton();
+                    unlockScreen();
                     break;
                 case TelephonyManager.CALL_STATE_OFFHOOK:
                     break;
@@ -84,30 +86,31 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
      */
     @Override
     public boolean onKeyDown(int keyCode, android.view.KeyEvent event) {
-        if ((keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)
-                || (keyCode == KeyEvent.KEYCODE_POWER)
-                || (keyCode == KeyEvent.KEYCODE_VOLUME_UP)
-                || (keyCode == KeyEvent.KEYCODE_CAMERA)) {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
+                || keyCode == KeyEvent.KEYCODE_POWER
+                || keyCode == KeyEvent.KEYCODE_VOLUME_UP
+                || keyCode == KeyEvent.KEYCODE_CAMERA
+                || keyCode == KeyEvent.KEYCODE_HOME) {
             return true;
         }
-        return keyCode == KeyEvent.KEYCODE_HOME;
+        return super.dispatchKeyEvent(event);
     }
 
 
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP
-                || (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_DOWN)
-                || (event.getKeyCode() == KeyEvent.KEYCODE_POWER)) {
+                || event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_DOWN
+                || event.getKeyCode() == KeyEvent.KEYCODE_POWER) {
             return false;
         }
         return event.getKeyCode() == KeyEvent.KEYCODE_HOME;
     }
 
-    public void lockHomeButton() {
+    public void lockScreen() {
         mLockscreenUtil.lock(LockScreenActivity.this);
     }
 
-    public void unlockHomeButton() {
+    public void unlockScreen() {
         mLockscreenUtil.unlock();
     }
 
@@ -121,7 +124,7 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
     @Override
     protected void onStop() {
         super.onStop();
-        unlockHomeButton();
+        unlockScreen();
     }
 
     @SuppressWarnings("deprecation")
