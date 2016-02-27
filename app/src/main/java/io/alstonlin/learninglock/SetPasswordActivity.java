@@ -1,5 +1,6 @@
 package io.alstonlin.learninglock;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -16,12 +17,24 @@ import me.zhanghai.android.patternlock.SetPatternActivity;
 
 public class SetPasswordActivity extends SetPatternActivity {
 
+    Context context = this;
+    public List<PatternView.Cell> savedPattern;
+    int nodesClicked = 0;
+    double[] timeAtClick;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_set_password);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        if (savedPattern == null){
+            //prompt user to create new one
+        }
+        else{
+            //ask user if new pattern is desired
+        }
 
         final PatternView patternView = (PatternView) findViewById(R.id.setPasswordPattern);
         patternView.setOnPatternListener(new PatternView.OnPatternListener() {
@@ -36,17 +49,24 @@ public class SetPasswordActivity extends SetPatternActivity {
 
             @Override
             public void onPatternCellAdded(List<PatternView.Cell> pattern) {
+                //called each time a new node is touched; get value of times at each
+                timeAtClick[nodesClicked] = ((double) System.currentTimeMillis());
+                nodesClicked++;
 
             }
 
             @Override
             public void onPatternDetected(List<PatternView.Cell> pattern) {
-                //returns size
+                //returns size of pattern (nodes clicked)
+                LockScreenML.setup(context);
+                nodesClicked = 0;
                 patternView.clearPattern();
+
+                savedPattern = pattern;
+
+
             }
         });
-        Log.wtf("yes", patternView.getCellStates().toString());
-        //patternView.setPattern();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -56,6 +76,16 @@ public class SetPasswordActivity extends SetPatternActivity {
                         .setAction("Action", null).show();
             }
         });
+    }
+
+    public double[] elapsedTimesArray (double[] timeAtClick){
+
+        double[] elapsedTimes = new double[timeAtClick.length-1];
+        for (int i = 0; i < timeAtClick.length - 1; i++) {
+            elapsedTimes[i] = timeAtClick[i+1] - timeAtClick[i];
+        }
+
+        return elapsedTimes;
     }
 
     @Override

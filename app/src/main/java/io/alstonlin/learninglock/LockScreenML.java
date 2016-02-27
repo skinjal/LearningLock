@@ -94,7 +94,7 @@ public class LockScreenML {
 
     /**
      * Sets the array size of the data sent to the network to train. Must be called before the
-     * network is actually trained and used
+     * network is actually trained and used (TIMES)
      * @param inputLayerCount The value
      */
     private void setInputLayerCount(int inputLayerCount){
