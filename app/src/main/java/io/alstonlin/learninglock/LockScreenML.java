@@ -1,5 +1,7 @@
 package io.alstonlin.learninglock;
 
+import android.content.Context;
+
 import org.encog.engine.network.activation.ActivationSigmoid;
 import org.encog.ml.data.MLData;
 import org.encog.ml.data.basic.BasicMLData;
@@ -9,9 +11,13 @@ import org.encog.neural.networks.BasicNetwork;
 import org.encog.neural.networks.layers.BasicLayer;
 import org.encog.neural.networks.training.Train;
 import org.encog.neural.networks.training.propagation.resilient.ResilientPropagation;
-import org.encog.persist.EncogDirectoryPersistence;
 
-import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 public class LockScreenML {
@@ -20,12 +26,14 @@ public class LockScreenML {
     private static final double OUTPUT_THRESHOLD = 0.5;
     private static final double TRAIN_CONVERGENCE_THRESHOLD = 0.01;
     // Fields
+    private transient Context context;
     private ArrayList<double[]> valid;
     private ArrayList<double[]> invalid;
     private BasicNetwork network;
     private int inputLayerCount;
 
-    private LockScreenML(int inputLayerCount){
+    private LockScreenML(Context context, int inputLayerCount){
+        this.context = context;
         this.inputLayerCount = inputLayerCount;
         this.network = new BasicNetwork();
         this.valid = new ArrayList<>();
@@ -41,15 +49,27 @@ public class LockScreenML {
      * Attemps to load from file if exists.
      * @return The loaded object from file, or null if does not exist
      */
-    public static LockScreenML loadFromFile(){
+    public static LockScreenML loadFromFile(Context context){
+        FileInputStream fis = null;
+        ObjectInputStream is = null;
+        LockScreenML result = null;
         try {
-            BasicNetwork network = (BasicNetwork) EncogDirectoryPersistence.loadObject(new File(FILENAME));
-            LockScreenML loaded = new LockScreenML(network.getLayerTotalNeuronCount(0));
-            loaded.network = network;
-            return loaded;
-        } catch(Exception e){
-            return null;
+            fis = context.openFileInput(FILENAME);
+            is = new ObjectInputStream(fis);
+            LockScreenML loaded = (LockScreenML) is.readObject();
+            loaded.context = context;
+            result = loaded;
+        } catch(IOException | ClassNotFoundException e){
+            e.printStackTrace();
+        } finally {
+            try {
+                if (is != null) is.close();
+                if (fis != null) fis.close();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
         }
+        return result;
     }
 
     /**
@@ -101,7 +121,26 @@ public class LockScreenML {
             train.iteration();
         } while(train.getError() > TRAIN_CONVERGENCE_THRESHOLD);
         // Saves everything this is trained
-        EncogDirectoryPersistence.saveObject(new File(FILENAME), network);
+        save();
+    }
+
+    private void save() {
+        FileOutputStream fos = null;
+        ObjectOutputStream os = null;
+        try {
+            fos = context.openFileOutput(FILENAME, Context.MODE_PRIVATE);
+            os = new ObjectOutputStream(fos);
+            os.writeObject(this);
+        } catch (IOException e){
+            e.printStackTrace();
+        } finally {
+            try {
+                if (os != null) os.close();
+                if (fos != null) fos.close();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+        }
     }
 
 

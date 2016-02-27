@@ -6,20 +6,18 @@ import android.content.Intent;
 
 public class LockScreenReceiver extends BroadcastReceiver {
 
-    // Handle actions and display Lockscreen
     @Override
     public void onReceive(Context context, Intent intent) {
 
         if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)
                 || intent.getAction().equals(Intent.ACTION_SCREEN_ON)
                 || intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
-            start_lockscreen(context);
+            startLockscreen(context);
         }
 
     }
 
-    // Display lock screen
-    private void start_lockscreen(Context context) {
+    private void startLockscreen(Context context) {
         Intent mIntent = new Intent(context, LockScreenActivity.class);
         mIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(mIntent);
