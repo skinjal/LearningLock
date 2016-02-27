@@ -1,6 +1,8 @@
 package io.alstonlin.learninglock;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -9,6 +11,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.List;
 
 import me.zhanghai.android.patternlock.PatternUtils;
@@ -95,5 +100,29 @@ public class SetPasswordActivity extends SetPatternActivity {
         PatternUtils.patternToSha1(pattern);
         String patternSha1 = PatternUtils.patternToSha1String(pattern);
 
+    }
+
+    private void setPasscode(){
+        // Starts Keypad Activity
+        Intent intent = new Intent(this, KeypadActivity.class);
+        startActivityForResult(intent, KeypadActivity.ACTIVITY_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == KeypadActivity.ACTIVITY_CODE) {
+            if (resultCode == Activity.RESULT_OK){
+                String result = data.getStringExtra(KeypadActivity.PASSCODE_VALUE);
+                // Saves passcode to file
+                try {
+                    OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput(LockScreenActivity.PASSCODE_FILENAME, Context.MODE_PRIVATE));
+                    outputStreamWriter.write(result);
+                    outputStreamWriter.close();
+                }
+                catch (IOException e) {
+                    Log.e("Exception", "File write failed: " + e.toString());
+                }
+            }
+        }
     }
 }

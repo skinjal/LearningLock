@@ -1,7 +1,6 @@
 package io.alstonlin.learninglock;
 
 import android.app.Activity;
-import android.app.KeyguardManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.telephony.PhoneStateListener;
@@ -10,19 +9,25 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.PopupWindow;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 
 public class LockScreenActivity extends Activity implements OnLockStatusChangedListener {
 
-    private PopupWindow passcodeWindow;
+    public static String PASSCODE_FILENAME = "passcode.txt";
     private Button btnUnlock;
     private Button btnEdit;
-    private LockScreenUtil mLockscreenUtil;
+    private LockScreenUtil lockscreenUtil;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Makes the app fullscreen
         getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN
                         | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
@@ -32,9 +37,14 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
         );
 
         setContentView(R.layout.activity_lockscreen);
+        lockscreenUtil = new LockScreenUtil();
+        // Sets up the machine learning Singleton
+        if(!LockScreenML.setup(this)){ // First time
+            Intent intent = new Intent(LockScreenActivity.this, SetPasswordActivity.class);
+            startActivity(intent);
+        }
 
-        mLockscreenUtil = new LockScreenUtil();
-
+        // TODO: Remove temporary buttons
         btnEdit = (Button) findViewById(R.id.editPass);
         btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -43,22 +53,22 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
                 startActivity(i);
             }
         });
-
         btnUnlock = (Button) findViewById(R.id.btnUnlock);
         btnUnlock.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                unlockScreen();
+                lockscreenUtil.unlock();
             }
         });
 
+        // Disables anything that would make this exit
         if (getIntent() != null && getIntent().hasExtra("kill") && getIntent().getExtras().getInt("kill") == 1) {
-            enableKeyguard();
-            unlockScreen();
+            //enableKeyguard();
+            lockscreenUtil.unlock();
         } else {
             try {
-                disableKeyguard();
-                lockScreen();
+                //disableKeyguard();
+                lockscreenUtil.lock(LockScreenActivity.this);
                 startService(new Intent(this, LockScreenService.class));
                 StateListener phoneStateListener = new StateListener();
                 TelephonyManager telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
@@ -68,18 +78,15 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
         }
     }
 
+    /**
+     * Unlocks if there's a call
+     */
     private class StateListener extends PhoneStateListener {
         @Override
         public void onCallStateChanged(int state, String incomingNumber) {
             super.onCallStateChanged(state, incomingNumber);
-            switch (state) {
-                case TelephonyManager.CALL_STATE_RINGING:
-                    unlockScreen();
-                    break;
-                case TelephonyManager.CALL_STATE_OFFHOOK:
-                    break;
-                case TelephonyManager.CALL_STATE_IDLE:
-                    break;
+            if (state == TelephonyManager.CALL_STATE_RINGING){
+                lockscreenUtil.unlock();
             }
         }
     };
@@ -113,7 +120,7 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
     private void handleSuspectEntry(double[][] times){
         // Starts Keypad Activity
         Intent intent = new Intent(this, KeypadActivity.class);
-        startActivityForResult(intent, 1);
+        startActivityForResult(intent, KeypadActivity.ACTIVITY_CODE);
     }
 
     public boolean dispatchKeyEvent(KeyEvent event) {
@@ -125,56 +132,66 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
         return event.getKeyCode() == KeyEvent.KEYCODE_HOME;
     }
 
-    public void lockScreen() {
-        mLockscreenUtil.lock(LockScreenActivity.this);
-    }
-
-    public void unlockScreen() {
-        mLockscreenUtil.unlock();
-    }
-
     @Override
     public void onLockStatusChanged(boolean isLocked) {
         if (!isLocked) {
-            unlockDevice();
+            finish();
         }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        unlockScreen();
+        lockscreenUtil.unlock();
     }
 
-    @SuppressWarnings("deprecation")
-    private void disableKeyguard() {
-        KeyguardManager mKM = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
-        KeyguardManager.KeyguardLock mKL = mKM.newKeyguardLock("IN");
-        mKL.disableKeyguard();
-    }
+//    @SuppressWarnings("deprecation")
+//    private void disableKeyguard() {
+//        KeyguardManager mKM = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+//        KeyguardManager.KeyguardLock mKL = mKM.newKeyguardLock("IN");
+//        mKL.disableKeyguard();
+//    }
+//
+//    @SuppressWarnings("deprecation")
+//    private void enableKeyguard() {
+//        KeyguardManager mKM = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+//        KeyguardManager.KeyguardLock mKL = mKM.newKeyguardLock("IN");
+//        mKL.reenableKeyguard();
+//    }
 
-    @SuppressWarnings("deprecation")
-    private void enableKeyguard() {
-        KeyguardManager mKM = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
-        KeyguardManager.KeyguardLock mKL = mKM.newKeyguardLock("IN");
-        mKL.reenableKeyguard();
-    }
-
-    /**
-     * Finishes Activity to unlock device
-     */
-    private void unlockDevice() {
-        finish();
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 1) {
+        if (requestCode == KeypadActivity.ACTIVITY_CODE) {
             // Compares to actual pin value
             if (resultCode == Activity.RESULT_OK){
                 String result = data.getStringExtra(KeypadActivity.PASSCODE_VALUE);
-                // TODO: Actually compare
+                // Opens file and compares
+                String actual = null;
+                File fl = new File(PASSCODE_FILENAME);
+                try {
+                    FileInputStream fin = new FileInputStream(fl);
+                    actual = convertStreamToString(fin);
+                    fin.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                // Compares
+                if (result.equals(actual)){
+
+                }
             }
         }
+    }
+
+    public static String convertStreamToString(InputStream is) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line).append("\n");
+        }
+        reader.close();
+        return sb.toString();
     }
 }

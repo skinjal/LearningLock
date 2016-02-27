@@ -17,13 +17,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class LockScreenML {
+public class LockScreenML implements Serializable{
     // Constants
     public static final String FILENAME = "learning_lock_saved.eg";
     private static final double OUTPUT_THRESHOLD = 0.5;
     private static final double TRAIN_CONVERGENCE_THRESHOLD = 0.01;
+    private static final long serialVersionUID = 19981017L;
     // Singleton
     private static LockScreenML instance;
     // Fields
@@ -161,6 +163,7 @@ public class LockScreenML {
     }
 
     private void save() {
+        // Writes the entire object
         FileOutputStream fos = null;
         ObjectOutputStream os = null;
         try {
