@@ -120,7 +120,7 @@ public class LockScreenML implements Serializable{
         list.add(data);
         // Converts to a 2d array
         double[][] validArray = new double[valid.size()][inputLayerCount];
-        double[][] invalidArray = new double[valid.size()][inputLayerCount];
+        double[][] invalidArray = new double[invalid.size()][inputLayerCount];
         for (int i = 0; i < valid.size(); i++){
             validArray[i] = valid.get(i);
         }
@@ -195,5 +195,8 @@ public class LockScreenML implements Serializable{
         }
     }
 
+    public static boolean isSetup(){
+        return instance != null && instance.invalid != null;
+    }
 
 }
