@@ -4,6 +4,8 @@ import android.content.Context;
 import android.util.Log;
 
 import org.encog.engine.network.activation.ActivationSigmoid;
+import org.encog.engine.network.activation.ActivationStep;
+import org.encog.engine.network.activation.ActivationTANH;
 import org.encog.ml.data.MLData;
 import org.encog.ml.data.basic.BasicMLData;
 import org.encog.neural.data.NeuralDataSet;
@@ -11,7 +13,7 @@ import org.encog.neural.data.basic.BasicNeuralDataSet;
 import org.encog.neural.networks.BasicNetwork;
 import org.encog.neural.networks.layers.BasicLayer;
 import org.encog.neural.networks.training.Train;
-import org.encog.neural.networks.training.propagation.back.Backpropagation;
+import org.encog.neural.networks.training.propagation.resilient.ResilientPropagation;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -24,9 +26,8 @@ import java.util.ArrayList;
 public class LockScreenML implements Serializable{
     // Constants
     public static final String FILENAME = "learning_lock_saved.eg";
-    private static final double OUTPUT_THRESHOLD = 0.5;
-    private static final double TRAIN_CONVERGENCE_THRESHOLD = 0.05;
-    private static final int MAX_EPOCHS = 100000;
+    private static final double TRAIN_CONVERGENCE_THRESHOLD = 0.01;
+    private static final int MAX_EPOCHS = 10000;
     private static final long serialVersionUID = 19981017L;
     // Singleton
     private static LockScreenML instance;
@@ -106,8 +107,8 @@ public class LockScreenML implements Serializable{
         this.valid = new ArrayList<>();
         this.invalid = new ArrayList<>();
         this.network.addLayer(new BasicLayer(new ActivationSigmoid(), true, inputLayerCount)); // Input
-        this.network.addLayer(new BasicLayer(new ActivationSigmoid(), true, inputLayerCount)); // Hidden
-        this.network.addLayer(new BasicLayer(new ActivationSigmoid(), false, 1)); // Output
+        this.network.addLayer(new BasicLayer(new ActivationSigmoid(), true, 6 * inputLayerCount)); // Hidden
+        this.network.addLayer(new BasicLayer(new ActivationStep(), false, 1)); // Output
         this.network.getStructure().finalizeStructure();
         this.network.reset();
     }
@@ -131,7 +132,7 @@ public class LockScreenML implements Serializable{
     public boolean predict(double[] times){
         MLData input = new BasicMLData(times);
         MLData output =  network.compute(input);
-        return output.getData()[0] >= OUTPUT_THRESHOLD;
+        return output.getData()[0]  == 1;
     }
 
     /**
@@ -172,14 +173,14 @@ public class LockScreenML implements Serializable{
         }
         NeuralDataSet trainingSet = new BasicNeuralDataSet(input, output);
         // Starts training
-        final Train train = new Backpropagation(network, trainingSet);
+        final Train train = new ResilientPropagation(network, trainingSet);
         int counter = 0;
         double error;
         do {
             train.iteration();
             counter++;
             error = train.getError();
-            if (counter % 100 == 0) Log.i("Blah", "ERROR =" + error);
+            if (counter % 10 == 0) Log.i("Blah", "ERROR =" + error);
         } while(error > TRAIN_CONVERGENCE_THRESHOLD && counter < MAX_EPOCHS);
         // Saves everything this is trained
         save();
