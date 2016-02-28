@@ -258,7 +258,7 @@ public class LockScreenService extends Service {
                 // Compares
                 if (pin.equals(actual)) {
                     //LockScreenML.getInstance().addEntry(delayTimes, true, true);
-                    stopSelf();
+                    unlock();
                 } else {
                     Toast.makeText(this, "Wrong PIN!", Toast.LENGTH_LONG).show();
                 }
