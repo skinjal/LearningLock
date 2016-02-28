@@ -1,15 +1,22 @@
 package io.alstonlin.learninglock;
 
+import android.Manifest;
 import android.app.Notification;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -52,6 +59,27 @@ public class LockScreenService extends Service {
     private Button btnEdit;
     private ArrayList<Double> timeAtClick = new ArrayList<>();
     private double[] delayTimes; // To store for startActivityForResult
+    private String[] weather;
+
+    private final LocationListener locationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            weather = DAO.getWeather(location.getLongitude(), location.getLatitude());
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+        }
+    };
+
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -62,7 +90,7 @@ public class LockScreenService extends Service {
     public void onCreate() {
         super.onCreate();
         // Sets up the ML Singleton
-        if(!LockScreenML.isSetup() && !LockScreenML.setup(this)){ // First time
+        if (!LockScreenML.isSetup() && !LockScreenML.setup(this)) { // First time
             Intent intent = new Intent(this, SetPasswordActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
@@ -70,10 +98,35 @@ public class LockScreenService extends Service {
             lock();
             loadPattern();
             setupPatternListener();
+            setupWeather();
             final TextView dateText = (TextView) container.findViewById(R.id.date);
         }
     }
 
+    private void setupWeather() {
+        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        final Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        if (location != null){
+            AsyncTask<Void, Void, String[]> task = new AsyncTask<Void, Void, String[]>() {
+                @Override
+                protected String[] doInBackground(Void... params) {
+                    return DAO.getWeather(location.getLongitude(), location.getLatitude());
+                }
+
+                @Override
+                protected void onPostExecute(String[] val){
+                    super.onPostExecute(val);
+                    weather = val;
+                }
+            };
+            task.execute();
+        }else {
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
+        }
+    }
     /**
      * Loads pattern from file.
      */
@@ -161,28 +214,29 @@ public class LockScreenService extends Service {
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         mReceiver = new LockScreenReceiver();
         registerReceiver(mReceiver, filter);
-
-        pin = intent.getStringExtra(KeypadActivity.PASSCODE_VALUE);
-        if (pin != null){
-            String actual = null;
-            try {
-                FileInputStream fileInputStream = openFileInput(PASSCODE_FILENAME);
-                ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-                actual = (String) objectInputStream.readObject();
-                objectInputStream.close();
-                fileInputStream.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            // Compares
-            if (pin.equals(actual)){
-                LockScreenML.getInstance().addEntry(delayTimes, true, true);
-                stopSelf();
+        if (intent != null) {
+            pin = intent.getStringExtra(KeypadActivity.PASSCODE_VALUE);
+            if (pin != null) {
+                String actual = null;
+                try {
+                    FileInputStream fileInputStream = openFileInput(PASSCODE_FILENAME);
+                    ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+                    actual = (String) objectInputStream.readObject();
+                    objectInputStream.close();
+                    fileInputStream.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                // Compares
+                if (pin.equals(actual)) {
+                    LockScreenML.getInstance().addEntry(delayTimes, true, true);
+                    stopSelf();
+                } else {
+                    Toast.makeText(this, "Wrong PIN!", Toast.LENGTH_LONG).show();
+                }
             } else {
-                Toast.makeText(this, "Wrong PIN!", Toast.LENGTH_LONG).show();
+                startForeground();
             }
-        } else {
-            startForeground();
         }
         return START_STICKY;
     }

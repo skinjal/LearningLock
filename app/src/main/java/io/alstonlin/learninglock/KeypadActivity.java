@@ -24,6 +24,10 @@ public class KeypadActivity extends Activity{
         setContentView(R.layout.passcode);
     }
 
+    @Override
+    public void onBackPressed(){
+    }
+
     private void updateDisplay(){
         TextView tv = (TextView) findViewById(R.id.display);
         String text = new String(new char[pin.size()]).replace("\0", "*");
