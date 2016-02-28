@@ -143,11 +143,15 @@ public class LockScreenService extends Service {
                 @Override
                 protected void onPostExecute(String[] val){
                     super.onPostExecute(val);
-                    weather = val;
-                    ImageView imageView = (ImageView) container.findViewById(R.id.weather_img);
-                    TextView tempView = (TextView) container.findViewById(R.id.temp);
-                    new DownloadImageTask(imageView).execute(weather[0]);
-                    tempView.setText(weather[1] + "C");
+                    try {
+                        weather = val;
+                        ImageView imageView = (ImageView) container.findViewById(R.id.weather_img);
+                        TextView tempView = (TextView) container.findViewById(R.id.temp);
+                        new DownloadImageTask(imageView).execute(weather[0]);
+                        tempView.setText(weather[1] + "C");
+                    } catch (Throwable t){
+                        t.printStackTrace();
+                    }
                 }
             };
             task.execute();
