@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.FileOutputStream;
@@ -23,12 +25,14 @@ public class SetPasswordActivity extends SetPatternActivity {
     private ArrayList<Double> timeAtClick = new ArrayList<>();
     private int count = 0;
     private boolean onValid = true;
+    private TextView promptTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_set_password);
-        Toast.makeText(SetPasswordActivity.this, "Please draw a pattern 5 times", Toast.LENGTH_SHORT).show();
+        promptTextView = (TextView) findViewById(R.id.promptText);
+        promptTextView.setText("Please draw a pattern 5 times");
         // Listener for the pattern activities
         final PatternView patternView = (PatternView) findViewById(R.id.setPasswordPattern);
         patternView.setOnPatternListener(new PatternView.OnPatternListener() {
@@ -49,32 +53,35 @@ public class SetPasswordActivity extends SetPatternActivity {
             public void onPatternDetected(List<PatternView.Cell> p) {
                 ArrayList<int[]> current = toList(p);
 
-                if (pattern == null){
+                if (pattern == null && current.size() >= 6){
                     pattern = current;
                     savePattern(current);
                     LockScreenML.getInstance().setInputLayerCount(calculateTimeElapsed((timeAtClick)).length);
                 }
 
-                if (onValid) {
+                if (onValid && current.size() >= 6) {
                     if (equal(current, pattern)){
                         LockScreenML.getInstance().addEntry(calculateTimeElapsed(timeAtClick), true, false);
                         count++;
                     }
-                    else Toast.makeText(SetPasswordActivity.this, "Did not match first pattern", Toast.LENGTH_SHORT).show();
-                } else {
+                    else Snackbar.make(patternView, "Did not match first pattern", Snackbar.LENGTH_SHORT).show();
+                } else if (current.size() >= 6){
                     if (equal(current, pattern)){
                         LockScreenML.getInstance().addEntry(calculateTimeElapsed(timeAtClick), false, false);
                         count++;
                     }
-                    else Toast.makeText(SetPasswordActivity.this, "Did not match first pattern", Toast.LENGTH_SHORT).show();
+                    else Snackbar.make(patternView, "Did not match first pattern", Snackbar.LENGTH_SHORT).show();
+
+                } else {
+                    Snackbar.make(patternView, "Pattern is too short; please hit 6 or more circles", Snackbar.LENGTH_SHORT).show();
                 }
 
                 patternView.clearPattern();
                 timeAtClick.clear();
 
                 if (count == 5){
-                    if (onValid){
-                        Toast.makeText(SetPasswordActivity.this, "Now, have other people draw the pattern 5 times", Toast.LENGTH_SHORT).show();
+                    if (onValid) {
+                        promptTextView.setText("Now, have other people draw the pattern 5 times");
                         onValid = false;
                         count = 0;
                     }else {
