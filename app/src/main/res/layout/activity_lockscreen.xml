@@ -39,7 +39,8 @@
 
     <android.support.v4.view.ViewPager
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="125dp"
+        android:id="@+id/viewPager"
         android:layout_below="@+id/date"
         android:layout_margin="10dp">
     </android.support.v4.view.ViewPager>

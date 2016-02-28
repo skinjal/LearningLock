@@ -9,6 +9,7 @@
         android:layout_weight="4"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:id="@+id/display"
+        android:textSize="50sp"
         android:layout_gravity="center_horizontal" />
 
     <LinearLayout
@@ -27,6 +28,10 @@
                 android:layout_weight="1"
                 android:text="1"
                 android:textSize="32sp"
+                android:layout_marginLeft="-5dip"
+                android:layout_marginRight="-5dip"
+                android:layout_marginTop="-5dip"
+                android:layout_marginBottom="-5dip"
                 android:onClick="clickOne"/>
             <Button
                 android:layout_width="0dp"
@@ -34,6 +39,10 @@
                 android:layout_weight="1"
                 android:text="2"
                 android:textSize="32sp"
+                android:layout_marginLeft="-5dip"
+                android:layout_marginRight="-5dip"
+                android:layout_marginTop="-5dip"
+                android:layout_marginBottom="-5dip"
                 android:onClick="clickTwo"/>
             <Button
                 android:layout_width="0dp"
@@ -41,6 +50,10 @@
                 android:layout_weight="1"
                 android:text="3"
                 android:textSize="32sp"
+                android:layout_marginLeft="-5dip"
+                android:layout_marginRight="-5dip"
+                android:layout_marginTop="-5dip"
+                android:layout_marginBottom="-5dip"
                 android:onClick="clickThree"/>
         </LinearLayout>
         <LinearLayout
@@ -54,6 +67,10 @@
                 android:layout_weight="1"
                 android:text="4"
                 android:textSize="32sp"
+                android:layout_marginLeft="-5dip"
+                android:layout_marginRight="-5dip"
+                android:layout_marginTop="-5dip"
+                android:layout_marginBottom="-5dip"
                 android:onClick="clickFour"/>
             <Button
                 android:layout_width="0dp"
@@ -61,6 +78,10 @@
                 android:layout_weight="1"
                 android:text="5"
                 android:textSize="32sp"
+                android:layout_marginLeft="-5dip"
+                android:layout_marginRight="-5dip"
+                android:layout_marginTop="-5dip"
+                android:layout_marginBottom="-5dip"
                 android:onClick="clickFive"/>
             <Button
                 android:layout_width="0dp"
@@ -68,6 +89,10 @@
                 android:layout_weight="1"
                 android:text="6"
                 android:textSize="32sp"
+                android:layout_marginLeft="-5dip"
+                android:layout_marginRight="-5dip"
+                android:layout_marginTop="-5dip"
+                android:layout_marginBottom="-5dip"
                 android:onClick="clickSix"/>
         </LinearLayout>
         <LinearLayout
@@ -81,6 +106,10 @@
                 android:layout_weight="1"
                 android:text="7"
                 android:textSize="32sp"
+                android:layout_marginLeft="-5dip"
+                android:layout_marginRight="-5dip"
+                android:layout_marginTop="-5dip"
+                android:layout_marginBottom="-5dip"
                 android:onClick="clickSeven"/>
             <Button
                 android:layout_width="0dp"
@@ -88,6 +117,10 @@
                 android:layout_weight="1"
                 android:text="8"
                 android:textSize="32sp"
+                android:layout_marginLeft="-5dip"
+                android:layout_marginRight="-5dip"
+                android:layout_marginTop="-5dip"
+                android:layout_marginBottom="-5dip"
                 android:onClick="clickEight"/>
             <Button
                 android:layout_width="0dp"
@@ -95,6 +128,10 @@
                 android:layout_weight="1"
                 android:text="9"
                 android:textSize="32sp"
+                android:layout_marginLeft="-5dip"
+                android:layout_marginRight="-5dip"
+                android:layout_marginTop="-5dip"
+                android:layout_marginBottom="-5dip"
                 android:onClick="clickNine"/>
         </LinearLayout>
         <LinearLayout
@@ -108,6 +145,10 @@
                 android:layout_weight="1"
                 android:text="⌫"
                 android:textSize="32sp"
+                android:layout_marginLeft="-5dip"
+                android:layout_marginRight="-5dip"
+                android:layout_marginTop="-5dip"
+                android:layout_marginBottom="-5dip"
                 android:onClick="clickBack"/>
             <Button
                 android:layout_width="0dp"
@@ -115,6 +156,10 @@
                 android:layout_weight="1"
                 android:text="0"
                 android:textSize="32sp"
+                android:layout_marginLeft="-5dip"
+                android:layout_marginRight="-5dip"
+                android:layout_marginTop="-5dip"
+                android:layout_marginBottom="-5dip"
                 android:onClick="clickZero"/>
             <Button
                 android:layout_width="0dp"
@@ -122,6 +167,10 @@
                 android:layout_weight="1"
                 android:text="✓"
                 android:textSize="32sp"
+                android:layout_marginLeft="-5dip"
+                android:layout_marginRight="-5dip"
+                android:layout_marginTop="-5dip"
+                android:layout_marginBottom="-5dip"
                 android:onClick="clickDone"/>
         </LinearLayout>
     </LinearLayout>

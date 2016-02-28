@@ -10,6 +10,8 @@ import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.location.Location;
 import android.os.IBinder;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NotificationCompat;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -68,6 +70,7 @@ public class LockScreenService extends Service {
             loadPattern();
             setupPatternListener();
             final TextView dateText = (TextView) container.findViewById(R.id.date);
+
         }
     }
 
