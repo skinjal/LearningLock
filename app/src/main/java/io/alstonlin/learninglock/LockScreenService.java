@@ -123,6 +123,7 @@ public class LockScreenService extends Service {
             setupPatternListener();
             setupWeather();
             final TextView dateText = (TextView) container.findViewById(R.id.date);
+
         }
     }
 
@@ -256,7 +257,7 @@ public class LockScreenService extends Service {
                 }
                 // Compares
                 if (pin.equals(actual)) {
-                    LockScreenML.getInstance().addEntry(delayTimes, true, true);
+                    //LockScreenML.getInstance().addEntry(delayTimes, true, true);
                     stopSelf();
                 } else {
                     Toast.makeText(this, "Wrong PIN!", Toast.LENGTH_LONG).show();
