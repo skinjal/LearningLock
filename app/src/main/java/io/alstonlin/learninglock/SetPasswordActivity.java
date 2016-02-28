@@ -25,13 +25,14 @@ public class SetPasswordActivity extends SetPatternActivity {
 
     private ArrayList<int[]> pattern = null;
     private ArrayList<Double> timeAtClick = new ArrayList<>();
+    private int count = 0;
+    private boolean onValid = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_set_password);
-        Toast.makeText(SetPasswordActivity.this, "Please enter a pattern", Toast.LENGTH_SHORT).show();
-
+        Toast.makeText(SetPasswordActivity.this, "Please draw a pattern 5 times", Toast.LENGTH_SHORT).show();
         // Listener for the pattern activities
         final PatternView patternView = (PatternView) findViewById(R.id.setPasswordPattern);
         patternView.setOnPatternListener(new PatternView.OnPatternListener() {
@@ -51,35 +52,40 @@ public class SetPasswordActivity extends SetPatternActivity {
             @Override
             public void onPatternDetected(List<PatternView.Cell> p) {
                 ArrayList<int[]> current = toList(p);
+
                 if (pattern == null){
                     pattern = current;
                     savePattern(current);
                     LockScreenML.getInstance().setInputLayerCount(calculateTimeElapsed((timeAtClick)).length);
                 }
+
+                if (onValid) {
+                    if (equal(current, pattern)){
+                        LockScreenML.getInstance().addEntry(calculateTimeElapsed(timeAtClick), true, false);
+                        count++;
+                    }
+                    else Toast.makeText(SetPasswordActivity.this, "Did not match first pattern", Toast.LENGTH_SHORT).show();
+                } else {
+                    if (equal(current, pattern)){
+                        LockScreenML.getInstance().addEntry(calculateTimeElapsed(timeAtClick), false, false);
+                        count++;
+                    }
+                    else Toast.makeText(SetPasswordActivity.this, "Did not match first pattern", Toast.LENGTH_SHORT).show();
+                }
+
                 patternView.clearPattern();
+                timeAtClick.clear();
 
-                Toast.makeText(SetPasswordActivity.this, "Please enter this pattern again 5 times", Toast.LENGTH_SHORT).show();
-
-                for (int i = 0; i < 5; i++) {
-                    if (equal(current, pattern))
-                        LockScreenML.getInstance().addEntry(calculateTimeElapsed(timeAtClick), true);
-                    else
-                        Toast.makeText(SetPasswordActivity.this, "Did not match first pattern", Toast.LENGTH_SHORT).show();
-                }
-
-                Toast.makeText(SetPasswordActivity.this, "Now, get a friend to enter your pattern 5 times", Toast.LENGTH_SHORT).show();
-
-                for (int i = 0; i < 5; i++) {
-                    if (equal(current, pattern))
-                        LockScreenML.getInstance().addEntry(calculateTimeElapsed(timeAtClick), false);
-                    else
-                        Toast.makeText(SetPasswordActivity.this, "Did not match first pattern", Toast.LENGTH_SHORT).show();
-                }
-
-                //go back to lockscreen after initial training is complete
-                Intent i = new Intent(SetPasswordActivity.this, LockScreenActivity.class);
-                startActivity(i);
-
+                if (count == 5){
+                    if (onValid){
+                        Toast.makeText(SetPasswordActivity.this, "Now, have other people draw the pattern 5 times", Toast.LENGTH_SHORT).show();
+                        onValid = false;
+                        count = 0;
+                    }else {
+                        LockScreenML.getInstance().train();
+                        finish();
+                    }
+                };
             }
         });
     }

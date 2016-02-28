@@ -66,13 +66,6 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
                 startActivity(i);
             }
         });
-        btnUnlock = (Button) findViewById(R.id.btnUnlock);
-        btnUnlock.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                lockscreenUtil.unlock();
-            }
-        });
 
         setupScreen();
         loadPattern();
@@ -248,7 +241,7 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
                 }
                 // Compares
                 if (result.equals(actual)){
-                    LockScreenML.getInstance().addEntry(delayTimes, true);
+                    LockScreenML.getInstance().addEntry(delayTimes, true, true);
                 } else {
                     Toast.makeText(this, "Wrong PIN!", Toast.LENGTH_LONG).show();
                 }
