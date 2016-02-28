@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.location.Location;
 import android.location.LocationListener;
@@ -25,20 +27,17 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import me.zhanghai.android.patternlock.PatternView;
@@ -86,6 +85,30 @@ public class LockScreenService extends Service {
         return null;
     }
 
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
+
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -121,6 +144,10 @@ public class LockScreenService extends Service {
                 protected void onPostExecute(String[] val){
                     super.onPostExecute(val);
                     weather = val;
+                    ImageView imageView = (ImageView) container.findViewById(R.id.weather_img);
+                    TextView tempView = (TextView) container.findViewById(R.id.temp);
+                    new DownloadImageTask(imageView).execute(weather[0]);
+                    tempView.setText(weather[1] + "C");
                 }
             };
             task.execute();
@@ -230,7 +257,7 @@ public class LockScreenService extends Service {
                 }
                 // Compares
                 if (pin.equals(actual)) {
-                    LockScreenML.getInstance().addEntry(delayTimes, true, true);
+                    //LockScreenML.getInstance().addEntry(delayTimes, true, true);
                     stopSelf();
                 } else {
                     Toast.makeText(this, "Wrong PIN!", Toast.LENGTH_LONG).show();

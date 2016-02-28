@@ -37,13 +37,27 @@
         android:id="@+id/date" />
 
 
-    <android.support.v4.view.ViewPager
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="125dp"
-        android:id="@+id/viewPager"
-        android:layout_below="@+id/date"
-        android:layout_margin="10dp">
-    </android.support.v4.view.ViewPager>
+        android:layout_below="@id/date"
+        android:gravity="center"
+        android:paddingTop="40dp"
+        android:layout_height="100dp">
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/weather_img"
+            android:scaleType="fitXY"
+            android:layout_gravity="left"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="5dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="42sp"
+            android:layout_gravity="right"
+            android:id="@+id/temp"/>
+    </LinearLayout>
 
 
     <me.zhanghai.android.patternlock.PatternView
