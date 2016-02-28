@@ -23,7 +23,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:paddingTop="60dp"/>
+        android:paddingTop="60dp"
+        style="@style/PatternView.Light"/>
 
     <Button
         android:id="@+id/editPass"

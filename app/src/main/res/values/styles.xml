@@ -34,13 +34,13 @@
     <style name="PatternView" parent="Base.PatternView">
         <item name="pl_regularColor">?colorControlNormal</item>
         <item name="pl_errorColor">#fff4511e</item>
-        <item name="pl_successColor">?colorControlActivated</item>
+        <item name="pl_successColor">#00FF00</item>
     </style>
 
     <style name="PatternView.Light" parent="Base.PatternView">
         <item name="pl_regularColor">#FFFFFF</item>
         <item name="pl_errorColor">#fff4511e</item>
-        <item name="pl_successColor">?colorControlActivated</item>
+        <item name="pl_successColor">#00FF00</item>
     </style>
 
 </resources>
