@@ -20,6 +20,7 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +37,9 @@ public class LockScreenService extends Service {
     // Constants
     public static final String PATTERN_FILENAME = "pattern";
     public static final String PASSCODE_FILENAME = "passcode";
+    public static final String LOCKSCREEN_SERVICE = "lockscreen_service";
     // Fields
+    private String pin;
     private BroadcastReceiver mReceiver;
     private WindowManager windowManager;
     private View container;
@@ -127,6 +130,7 @@ public class LockScreenService extends Service {
         // Starts Keypad Activity
         Intent intent = new Intent(this, KeypadActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra(LOCKSCREEN_SERVICE, true);
         startActivity(intent);
     }
 
@@ -151,7 +155,29 @@ public class LockScreenService extends Service {
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         mReceiver = new LockScreenReceiver();
         registerReceiver(mReceiver, filter);
-        startForeground();
+
+        pin = intent.getStringExtra(KeypadActivity.PASSCODE_VALUE);
+        if (pin != null){
+            String actual = null;
+            try {
+                FileInputStream fileInputStream = openFileInput(PASSCODE_FILENAME);
+                ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+                actual = (String) objectInputStream.readObject();
+                objectInputStream.close();
+                fileInputStream.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            // Compares
+            if (pin.equals(actual)){
+                LockScreenML.getInstance().addEntry(delayTimes, true, true);
+                stopSelf();
+            } else {
+                Toast.makeText(this, "Wrong PIN!", Toast.LENGTH_LONG).show();
+            }
+        } else {
+            startForeground();
+        }
         return START_STICKY;
     }
 

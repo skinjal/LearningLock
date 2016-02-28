@@ -119,9 +119,10 @@ public class SetPasswordActivity extends SetPatternActivity {
                 String result = data.getStringExtra(KeypadActivity.PASSCODE_VALUE);
                 // Saves passcode to file
                 try {
-                    OutputStreamWriter outputStreamWriter = new OutputStreamWriter(openFileOutput(LockScreenService.PASSCODE_FILENAME, Context.MODE_PRIVATE));
-                    outputStreamWriter.write(result);
-                    outputStreamWriter.close();
+                    FileOutputStream fos = openFileOutput(LockScreenService.PASSCODE_FILENAME, Context.MODE_PRIVATE);
+                    ObjectOutputStream os = new ObjectOutputStream(fos);
+                    os.writeObject(result);
+                    os.close();
                 }
                 catch (IOException e) {
                     Log.e("Exception", "File write failed: " + e.toString());

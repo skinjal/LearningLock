@@ -14,11 +14,13 @@ public class KeypadActivity extends Activity{
     public static final int ACTIVITY_CODE = 9;
     //Fields
     private ArrayList<Character> pin;
+    private boolean fromService = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         pin = new ArrayList<>();
+        fromService = getIntent().getBooleanExtra(LockScreenService.LOCKSCREEN_SERVICE, false);
         setContentView(R.layout.passcode);
     }
 
@@ -79,7 +81,12 @@ public class KeypadActivity extends Activity{
     }
 
     public void clickDone(View v){
-        Intent result = new Intent();
+        Intent result;
+        if (fromService){
+            result = new Intent(this, LockScreenService.class);
+        } else {
+            result = new Intent();
+        }
         // Creates and puts String as result
         StringBuilder builder = new StringBuilder();
         for (char c : pin){
@@ -87,6 +94,10 @@ public class KeypadActivity extends Activity{
         }
         result.putExtra(PASSCODE_VALUE, builder.toString());
         setResult(Activity.RESULT_OK, result);
+        if (fromService){
+            stopService(new Intent(this, LockScreenService.class));
+            startService(result);
+        }
         finish();
     }
 }
