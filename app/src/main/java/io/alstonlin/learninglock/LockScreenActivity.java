@@ -52,7 +52,7 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
         lockscreenUtil = new LockScreenUtil();
 
         // Sets up the machine learning Singleton
-        if(!LockScreenML.setup(this)){ // First time
+        if(!LockScreenML.isSetup() && !LockScreenML.setup(this)){ // First time
             Intent intent = new Intent(LockScreenActivity.this, SetPasswordActivity.class);
             startActivity(intent);
         }

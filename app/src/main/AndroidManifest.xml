@@ -48,9 +48,14 @@
         </receiver>
 
         <activity
+            android:name=".KeypadActivity"
+            android:label="@string/title_activity_keypad"
+            android:theme="@style/AppTheme.NoActionBar"/>
+
+        <activity
             android:name=".SetPasswordActivity"
             android:label="@string/title_activity_set_password"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>
