@@ -32,6 +32,9 @@
                 android:layout_marginRight="-5dip"
                 android:layout_marginTop="-5dip"
                 android:layout_marginBottom="-5dip"
+                android:background="#3F51B5"
+                android:textColor="@android:color/white"
+                android:fontFamily="sans-serif-light"
                 android:onClick="clickOne"/>
             <Button
                 android:layout_width="0dp"
@@ -43,6 +46,9 @@
                 android:layout_marginRight="-5dip"
                 android:layout_marginTop="-5dip"
                 android:layout_marginBottom="-5dip"
+                android:background="#3F51B5"
+                android:textColor="@android:color/white"
+                android:fontFamily="sans-serif-light"
                 android:onClick="clickTwo"/>
             <Button
                 android:layout_width="0dp"
@@ -54,6 +60,9 @@
                 android:layout_marginRight="-5dip"
                 android:layout_marginTop="-5dip"
                 android:layout_marginBottom="-5dip"
+                android:background="#3F51B5"
+                android:textColor="@android:color/white"
+                android:fontFamily="sans-serif-light"
                 android:onClick="clickThree"/>
         </LinearLayout>
         <LinearLayout
@@ -71,6 +80,9 @@
                 android:layout_marginRight="-5dip"
                 android:layout_marginTop="-5dip"
                 android:layout_marginBottom="-5dip"
+                android:background="#3F51B5"
+                android:textColor="@android:color/white"
+                android:fontFamily="sans-serif-light"
                 android:onClick="clickFour"/>
             <Button
                 android:layout_width="0dp"
@@ -82,6 +94,9 @@
                 android:layout_marginRight="-5dip"
                 android:layout_marginTop="-5dip"
                 android:layout_marginBottom="-5dip"
+                android:background="#3F51B5"
+                android:textColor="@android:color/white"
+                android:fontFamily="sans-serif-light"
                 android:onClick="clickFive"/>
             <Button
                 android:layout_width="0dp"
@@ -93,6 +108,9 @@
                 android:layout_marginRight="-5dip"
                 android:layout_marginTop="-5dip"
                 android:layout_marginBottom="-5dip"
+                android:background="#3F51B5"
+                android:textColor="@android:color/white"
+                android:fontFamily="sans-serif-light"
                 android:onClick="clickSix"/>
         </LinearLayout>
         <LinearLayout
@@ -110,6 +128,9 @@
                 android:layout_marginRight="-5dip"
                 android:layout_marginTop="-5dip"
                 android:layout_marginBottom="-5dip"
+                android:background="#3F51B5"
+                android:textColor="@android:color/white"
+                android:fontFamily="sans-serif-light"
                 android:onClick="clickSeven"/>
             <Button
                 android:layout_width="0dp"
@@ -121,6 +142,9 @@
                 android:layout_marginRight="-5dip"
                 android:layout_marginTop="-5dip"
                 android:layout_marginBottom="-5dip"
+                android:background="#3F51B5"
+                android:textColor="@android:color/white"
+                android:fontFamily="sans-serif-light"
                 android:onClick="clickEight"/>
             <Button
                 android:layout_width="0dp"
@@ -132,6 +156,9 @@
                 android:layout_marginRight="-5dip"
                 android:layout_marginTop="-5dip"
                 android:layout_marginBottom="-5dip"
+                android:background="#3F51B5"
+                android:textColor="@android:color/white"
+                android:fontFamily="sans-serif-light"
                 android:onClick="clickNine"/>
         </LinearLayout>
         <LinearLayout
@@ -149,6 +176,9 @@
                 android:layout_marginRight="-5dip"
                 android:layout_marginTop="-5dip"
                 android:layout_marginBottom="-5dip"
+                android:background="#3F51B5"
+                android:textColor="@android:color/white"
+                android:fontFamily="sans-serif-light"
                 android:onClick="clickBack"/>
             <Button
                 android:layout_width="0dp"
@@ -160,6 +190,9 @@
                 android:layout_marginRight="-5dip"
                 android:layout_marginTop="-5dip"
                 android:layout_marginBottom="-5dip"
+                android:background="#3F51B5"
+                android:textColor="@android:color/white"
+                android:fontFamily="sans-serif-light"
                 android:onClick="clickZero"/>
             <Button
                 android:layout_width="0dp"
@@ -171,6 +204,9 @@
                 android:layout_marginRight="-5dip"
                 android:layout_marginTop="-5dip"
                 android:layout_marginBottom="-5dip"
+                android:background="#3F51B5"
+                android:textColor="@android:color/white"
+                android:fontFamily="sans-serif-light"
                 android:onClick="clickDone"/>
         </LinearLayout>
     </LinearLayout>
