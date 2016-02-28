@@ -94,6 +94,10 @@ public class SetPasswordActivity extends SetPatternActivity {
         });
     }
 
+
+    public void onBackPressed(){
+    }
+
     private double[] calculateTimeElapsed(ArrayList<Double> timeAtClick){
         double[] elapsedTimes = new double[timeAtClick.size()-1];
         for (int i = 0; i < timeAtClick.size() - 1; i++) {
@@ -115,15 +119,17 @@ public class SetPasswordActivity extends SetPatternActivity {
                 String result = data.getStringExtra(KeypadActivity.PASSCODE_VALUE);
                 // Saves passcode to file
                 try {
-                    OutputStreamWriter outputStreamWriter = new OutputStreamWriter(openFileOutput(LockScreenActivity.PASSCODE_FILENAME, Context.MODE_PRIVATE));
+                    OutputStreamWriter outputStreamWriter = new OutputStreamWriter(openFileOutput(LockScreenService.PASSCODE_FILENAME, Context.MODE_PRIVATE));
                     outputStreamWriter.write(result);
                     outputStreamWriter.close();
                 }
                 catch (IOException e) {
                     Log.e("Exception", "File write failed: " + e.toString());
                 }
-                finish();
+                stopService(new Intent(this, LockScreenService.class));
+                startService(new Intent(this, LockScreenService.class));
                 Toast.makeText(this, "All set up!", Toast.LENGTH_LONG).show();
+                finish();
             }
         }
     }
@@ -152,7 +158,7 @@ public class SetPasswordActivity extends SetPatternActivity {
         FileOutputStream fos = null;
         ObjectOutputStream os = null;
         try {
-            fos = openFileOutput(LockScreenActivity.PATTERN_FILENAME, Context.MODE_PRIVATE);
+            fos = openFileOutput(LockScreenService.PATTERN_FILENAME, Context.MODE_PRIVATE);
             os = new ObjectOutputStream(fos);
             os.writeObject(list);
         } catch (IOException e){
