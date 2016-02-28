@@ -14,17 +14,27 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import me.zhanghai.android.patternlock.PatternView;
 
 
 public class LockScreenActivity extends Activity implements OnLockStatusChangedListener {
 
-    public static String PASSCODE_FILENAME = "passcode.txt";
+    private ArrayList<int[]> pattern = null;
+    public static final String PATTERN_FILENAME = "pattern";
+    public static final String PASSCODE_FILENAME = "passcode";
     private Button btnUnlock;
     private Button btnEdit;
     private LockScreenUtil lockscreenUtil;
+    ArrayList<Double> timeAtClick = new ArrayList<>();
     private double[] delayTimes; // To store for startActivityForResult
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,15 +47,17 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
 
         );
 
+        // Initialization
         setContentView(R.layout.activity_lockscreen);
         lockscreenUtil = new LockScreenUtil();
+
         // Sets up the machine learning Singleton
         if(!LockScreenML.setup(this)){ // First time
             Intent intent = new Intent(LockScreenActivity.this, SetPasswordActivity.class);
             startActivity(intent);
         }
 
-        // TODO: Remove temporary buttons
+        // Buttons
         btnEdit = (Button) findViewById(R.id.editPass);
         btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,7 +74,49 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
             }
         });
 
-        // Disables anything that would make this exit
+        setupScreen();
+        loadPattern();
+        setupPatternListener();
+    }
+
+    private void setupPatternListener(){
+        final PatternView patternView = (PatternView) findViewById(R.id.pattern);
+        patternView.setOnPatternListener(new PatternView.OnPatternListener() {
+            @Override
+            public void onPatternStart() {
+            }
+
+            @Override
+            public void onPatternCleared() {
+            }
+
+            @Override
+            public void onPatternCellAdded(List<PatternView.Cell> pattern) {
+                timeAtClick.add(((double) System.currentTimeMillis()));
+            }
+
+            @Override
+            public void onPatternDetected(List<PatternView.Cell> p) {
+                ArrayList<int[]> current = toList(p);
+                patternView.clearPattern();
+                if (equal(current, pattern)){
+                    double[] elapsedTimes = calculateTimeElapsed(timeAtClick);
+                    boolean verified = LockScreenML.getInstance().predict(elapsedTimes);
+                    if (verified) lockscreenUtil.unlock();
+                    else {
+                        Toast.makeText(LockScreenActivity.this, "Suspicious Pattern, please enter your pin as well", Toast.LENGTH_SHORT).show();
+                        handleSuspectEntry(elapsedTimes);
+                    }
+                }
+                else Toast.makeText(LockScreenActivity.this, "Wrong Pattern", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    /**
+     * Sets up the screen to be locked.
+     */
+    private void setupScreen(){
         if (getIntent() != null && getIntent().hasExtra("kill") && getIntent().getExtras().getInt("kill") == 1) {
             //enableKeyguard();
             lockscreenUtil.unlock();
@@ -77,6 +131,36 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
             } catch (Exception e) {
             }
         }
+    }
+
+    /**
+     * Loads pattern from file.
+     */
+    private void loadPattern(){
+        FileInputStream fis = null;
+        ObjectInputStream is = null;
+        try {
+            fis = openFileInput(PATTERN_FILENAME);
+            is = new ObjectInputStream(fis);
+            pattern = (ArrayList<int[]>) is.readObject();
+        } catch(IOException | ClassNotFoundException e){
+            e.printStackTrace();
+        } finally {
+            try {
+                if (is != null) is.close();
+                if (fis != null) fis.close();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private double[] calculateTimeElapsed(ArrayList<Double> timeAtClick){
+        double[] elapsedTimes = new double[timeAtClick.size()-1];
+        for (int i = 0; i < timeAtClick.size() - 1; i++) {
+            elapsedTimes[i] = timeAtClick.get(i + 1) - timeAtClick.get(i);
+        }
+        return elapsedTimes;
     }
 
     /**
@@ -118,7 +202,7 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
         return super.dispatchKeyEvent(event);
     }
 
-    private void handleSuspectEntry(double[][] times){
+    private void handleSuspectEntry(double[] times){
         // Starts Keypad Activity
         Intent intent = new Intent(this, KeypadActivity.class);
         startActivityForResult(intent, KeypadActivity.ACTIVITY_CODE);
@@ -146,21 +230,6 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
         lockscreenUtil.unlock();
     }
 
-//    @SuppressWarnings("deprecation")
-//    private void disableKeyguard() {
-//        KeyguardManager mKM = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
-//        KeyguardManager.KeyguardLock mKL = mKM.newKeyguardLock("IN");
-//        mKL.disableKeyguard();
-//    }
-//
-//    @SuppressWarnings("deprecation")
-//    private void enableKeyguard() {
-//        KeyguardManager mKM = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
-//        KeyguardManager.KeyguardLock mKL = mKM.newKeyguardLock("IN");
-//        mKL.reenableKeyguard();
-//    }
-
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == KeypadActivity.ACTIVITY_CODE) {
@@ -187,7 +256,7 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
         }
     }
 
-    public static String convertStreamToString(InputStream is) throws Exception {
+    private String convertStreamToString(InputStream is) throws Exception {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         StringBuilder sb = new StringBuilder();
         String line = null;
@@ -196,5 +265,37 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
         }
         reader.close();
         return sb.toString();
+    }
+
+    /**
+     * Converts the list of Cells representing patterns to a list of int[2] with the same row/col info
+     * @param pattern The pattern to convert
+     * @return The converted list of int[2]
+     */
+    private ArrayList<int[]> toList(List<PatternView.Cell> pattern){
+        ArrayList<int[]> list = new ArrayList<>();
+        for (PatternView.Cell cell : pattern){
+            int[] a = new int[2];
+            a[0] = cell.getRow();
+            a[1] = cell.getColumn();
+            list.add(a);
+        }
+        return list;
+    }
+
+    /**
+     * Determines if two lists of int[2] are equal, because appearently Java can't check that for us.
+     * @param l1 The first list
+     * @param l2 The second list
+     * @return If the lists are equal
+     */
+    private boolean equal(List<int[]> l1, List<int[]> l2){
+        if (l1.size() != l2.size()) return false;
+        for (int i = 0; i < l1.size(); i++){
+            int[] e1 = l1.get(i);
+            int[] e2 = l2.get(i);
+            if (e1[0] != e2[0] || e1[1] != e2[1]) return false;
+        }
+        return true;
     }
 }

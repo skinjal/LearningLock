@@ -6,54 +6,36 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.List;
 
-import javax.xml.datatype.Duration;
-
-import me.zhanghai.android.patternlock.PatternUtils;
 import me.zhanghai.android.patternlock.PatternView;
 import me.zhanghai.android.patternlock.SetPatternActivity;
 
 public class SetPasswordActivity extends SetPatternActivity {
 
-    Context context = this;
-    public List<PatternView.Cell> savedPattern;
-    int nodesClicked = 0;
-    ArrayList<Double> timeAtClick = new ArrayList<Double>();
+    private ArrayList<int[]> pattern = null;
+    private ArrayList<Double> timeAtClick = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        PatternView setPasswordPatternView = (PatternView) findViewById(R.id.setPasswordPattern);
         setContentView(R.layout.activity_set_password);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
-        if (savedPattern == null){
-            //prompt user to create new one
-            //Snackbar.make(setPasswordPatternView,"Please create a passcode", Snackbar.LENGTH_LONG);
-
-        }
-        else{
-            //ask user if new pattern is desired
-            savedPattern = null;
-
-        }
-
+        // Listener for the pattern activities
         final PatternView patternView = (PatternView) findViewById(R.id.setPasswordPattern);
         patternView.setOnPatternListener(new PatternView.OnPatternListener() {
             @Override
             public void onPatternStart() {
-
             }
 
             @Override
@@ -62,68 +44,47 @@ public class SetPasswordActivity extends SetPatternActivity {
 
             @Override
             public void onPatternCellAdded(List<PatternView.Cell> pattern) {
-                //called each time a new node is touched; get value of times at each
                 timeAtClick.add(((double) System.currentTimeMillis()));
-                nodesClicked++;
-
             }
 
             @Override
-            public void onPatternDetected(List<PatternView.Cell> pattern) {
-                //returns size of pattern (nodes clicked)
-                if (savedPattern == null){
-                    savedPattern = pattern;
-                    LockScreenML.getInstance().setInputLayerCount(elapsedTimesArray((timeAtClick)).length);
+            public void onPatternDetected(List<PatternView.Cell> p) {
+                ArrayList<int[]> current = toList(p);
+                if (pattern == null){
+                    pattern = current;
+                    savePattern(current);
+                    LockScreenML.getInstance().setInputLayerCount(calculateTimeElapsed((timeAtClick)).length);
                 }
-
-                nodesClicked = 0;
                 patternView.clearPattern();
-
-                boolean isValidPasscode = true;
-                if (pattern != savedPattern)
-                    isValidPasscode = false;
-                //double[] timeAtClickArray = new double[timeAtClick.size()-1];
-                //timeAtClickArray = timeAtClick.toArray.();
-                LockScreenML.getInstance().addEntry(elapsedTimesArray(timeAtClick), isValidPasscode);
-
-            }
-        });
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                if (equal(current, pattern)) LockScreenML.getInstance().addEntry(calculateTimeElapsed(timeAtClick), true);
+                else Toast.makeText(SetPasswordActivity.this, "Did not match first pattern", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    public double[] elapsedTimesArray (ArrayList<Double> timeAtClick){
-
+    private double[] calculateTimeElapsed(ArrayList<Double> timeAtClick){
         double[] elapsedTimes = new double[timeAtClick.size()-1];
         for (int i = 0; i < timeAtClick.size() - 1; i++) {
-            elapsedTimes[i] = timeAtClick.get(i+1) - timeAtClick.get(i);
+            elapsedTimes[i] = timeAtClick.get(i + 1) - timeAtClick.get(i);
         }
-
         return elapsedTimes;
     }
 
-    @Override
-    protected void onSetPattern(List<PatternView.Cell> pattern) {
-        //super.onSetPattern(pattern);
-        Log.wtf("is this called", "yes");
-        PatternUtils.patternToSha1(pattern);
-        String patternSha1 = PatternUtils.patternToSha1String(pattern);
-
-    }
-
+    /**
+     * Call this function to launch the Activity to set the pass code
+     */
     private void setPasscode(){
         // Starts Keypad Activity
         Intent intent = new Intent(this, KeypadActivity.class);
         startActivityForResult(intent, KeypadActivity.ACTIVITY_CODE);
     }
 
+    /**
+     * The callback for when KeypadActivity returns with a result
+     * @param requestCode The code that was passed when the activity was requested
+     * @param resultCode The code that signifies the result's status
+     * @param data The data of the actual result
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == KeypadActivity.ACTIVITY_CODE) {
@@ -131,7 +92,7 @@ public class SetPasswordActivity extends SetPatternActivity {
                 String result = data.getStringExtra(KeypadActivity.PASSCODE_VALUE);
                 // Saves passcode to file
                 try {
-                    OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput(LockScreenActivity.PASSCODE_FILENAME, Context.MODE_PRIVATE));
+                    OutputStreamWriter outputStreamWriter = new OutputStreamWriter(openFileOutput(LockScreenActivity.PASSCODE_FILENAME, Context.MODE_PRIVATE));
                     outputStreamWriter.write(result);
                     outputStreamWriter.close();
                 }
@@ -140,5 +101,64 @@ public class SetPasswordActivity extends SetPatternActivity {
                 }
             }
         }
+    }
+
+    /**
+     * Converts the list of Cells representing patterns to a list of int[2] with the same row/col info
+     * @param pattern The pattern to convert
+     * @return The converted list of int[2]
+     */
+    private ArrayList<int[]> toList(List<PatternView.Cell> pattern){
+        ArrayList<int[]> list = new ArrayList<>();
+        for (PatternView.Cell cell : pattern){
+            int[] a = new int[2];
+            a[0] = cell.getRow();
+            a[1] = cell.getColumn();
+            list.add(a);
+        }
+        return list;
+    }
+
+    /**
+     * Writes the given pattern into disk.
+     * @param list The pattern in the form of a List of int[2]
+     */
+    private void savePattern(List<int[]> list){
+        FileOutputStream fos = null;
+        ObjectOutputStream os = null;
+        try {
+            fos = openFileOutput(LockScreenActivity.PATTERN_FILENAME, Context.MODE_PRIVATE);
+            os = new ObjectOutputStream(fos);
+            os.writeObject(list);
+        } catch (IOException e){
+            e.printStackTrace();
+        } finally {
+            try {
+                if (os != null) os.close();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+            try {
+                if (fos != null) fos.close();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Determines if two lists of int[2] are equal, because appearently Java can't check that for us.
+     * @param l1 The first list
+     * @param l2 The second list
+     * @return If the lists are equal
+     */
+    private boolean equal(List<int[]> l1, List<int[]> l2){
+        if (l1.size() != l2.size()) return false;
+        for (int i = 0; i < l1.size(); i++){
+            int[] e1 = l1.get(i);
+            int[] e2 = l2.get(i);
+            if (e1[0] != e2[0] || e1[1] != e2[1]) return false;
+        }
+        return true;
     }
 }

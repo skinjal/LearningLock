@@ -184,6 +184,10 @@ public class LockScreenML implements Serializable{
         } finally {
             try {
                 if (os != null) os.close();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+            try {
                 if (fos != null) fos.close();
             } catch (IOException e){
                 e.printStackTrace();
