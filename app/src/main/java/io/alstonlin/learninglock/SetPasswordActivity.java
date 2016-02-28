@@ -53,24 +53,26 @@ public class SetPasswordActivity extends SetPatternActivity {
             public void onPatternDetected(List<PatternView.Cell> p) {
                 ArrayList<int[]> current = toList(p);
 
-                if (pattern == null){
+                if (pattern == null && current.size() >= 6){
                     pattern = current;
                     savePattern(current);
                     LockScreenML.getInstance().setInputLayerCount(calculateTimeElapsed((timeAtClick)).length);
                 }
 
-                if (onValid) {
+                if (onValid && current.size() >= 6) {
                     if (equal(current, pattern)){
                         LockScreenML.getInstance().addEntry(calculateTimeElapsed(timeAtClick), true, false);
                         count++;
                     }
                     else Toast.makeText(SetPasswordActivity.this, "Did not match first pattern", Toast.LENGTH_SHORT).show();
-                } else {
+                } else if (current.size() >= 6){
                     if (equal(current, pattern)){
                         LockScreenML.getInstance().addEntry(calculateTimeElapsed(timeAtClick), false, false);
                         count++;
                     }
                     else Toast.makeText(SetPasswordActivity.this, "Did not match first pattern", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(SetPasswordActivity.this, "Pattern is too short; please hit 6 or more circles", Toast.LENGTH_SHORT).show();
                 }
 
                 patternView.clearPattern();
@@ -78,7 +80,7 @@ public class SetPasswordActivity extends SetPatternActivity {
 
                 if (count == 5){
                     if (onValid){
-                        Toast.makeText(SetPasswordActivity.this, "Now, have other people draw the pattern 5 times", Toast.LENGTH_SHORT).show();
+                        Snackbar.make(patternView, "Now, have other people draw the pattern 5 times", Snackbar.LENGTH_INDEFINITE).show();
                         onValid = false;
                         count = 0;
                     }else {
