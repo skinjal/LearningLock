@@ -5,7 +5,6 @@ import android.util.Log;
 
 import org.encog.engine.network.activation.ActivationSigmoid;
 import org.encog.engine.network.activation.ActivationStep;
-import org.encog.engine.network.activation.ActivationTANH;
 import org.encog.ml.data.MLData;
 import org.encog.ml.data.basic.BasicMLData;
 import org.encog.neural.data.NeuralDataSet;
@@ -26,7 +25,7 @@ import java.util.ArrayList;
 public class LockScreenML implements Serializable{
     // Constants
     public static final String FILENAME = "learning_lock_saved.eg";
-    private static final double TRAIN_CONVERGENCE_THRESHOLD = 0.01;
+    private static final double TRAIN_CONVERGENCE_THRESHOLD = 0.005;
     private static final int MAX_EPOCHS = 10000;
     private static final long serialVersionUID = 19981017L;
     // Singleton

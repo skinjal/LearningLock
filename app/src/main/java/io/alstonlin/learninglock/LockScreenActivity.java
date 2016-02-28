@@ -2,9 +2,11 @@ package io.alstonlin.learninglock;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -26,13 +28,15 @@ import me.zhanghai.android.patternlock.PatternView;
 
 public class LockScreenActivity extends Activity implements OnLockStatusChangedListener {
 
-    private ArrayList<int[]> pattern = null;
     public static final String PATTERN_FILENAME = "pattern";
     public static final String PASSCODE_FILENAME = "passcode";
-    private Button btnUnlock;
+
+    private WindowManager windowManager;
+    private View container;
+    private ArrayList<int[]> pattern = null;
     private Button btnEdit;
     private LockScreenUtil lockscreenUtil;
-    ArrayList<Double> timeAtClick = new ArrayList<>();
+    private ArrayList<Double> timeAtClick = new ArrayList<>();
     private double[] delayTimes; // To store for startActivityForResult
 
     @Override
@@ -51,7 +55,7 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
         setContentView(R.layout.activity_lockscreen);
         lockscreenUtil = new LockScreenUtil();
 
-        // Sets up the machine learning Singleton
+        // Sets up the ML Singleton
         if(!LockScreenML.isSetup() && !LockScreenML.setup(this)){ // First time
             Intent intent = new Intent(LockScreenActivity.this, SetPasswordActivity.class);
             startActivity(intent);
@@ -111,17 +115,31 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
      */
     private void setupScreen(){
         if (getIntent() != null && getIntent().hasExtra("kill") && getIntent().getExtras().getInt("kill") == 1) {
-            //enableKeyguard();
             lockscreenUtil.unlock();
         } else {
             try {
-                //disableKeyguard();
+                // Draws over all apps
+                WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.TYPE_PHONE,
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                        PixelFormat.TRANSLUCENT);
+
+                params.gravity = Gravity.TOP | Gravity.LEFT;
+                params.x = 0;
+                params.y = 100;
+                //windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+                //container = findViewById(R.id.container);
+                //windowManager.addView(container, params);
+                // Locks screen
                 lockscreenUtil.lock(LockScreenActivity.this);
                 startService(new Intent(this, LockScreenService.class));
                 StateListener phoneStateListener = new StateListener();
                 TelephonyManager telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
                 telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
             } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
@@ -170,14 +188,6 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
     };
 
     /**
-     * Disables back button
-     */
-    @Override
-    public void onBackPressed() {
-        return;
-    }
-
-    /**
      * Key Listener
      * @param keyCode The code for the key pressed
      * @param event The Key press event
@@ -196,6 +206,7 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
     }
 
     private void handleSuspectEntry(double[] times){
+        this.delayTimes = times;
         // Starts Keypad Activity
         Intent intent = new Intent(this, KeypadActivity.class);
         startActivityForResult(intent, KeypadActivity.ACTIVITY_CODE);
@@ -221,8 +232,15 @@ public class LockScreenActivity extends Activity implements OnLockStatusChangedL
     protected void onStop() {
         super.onStop();
         lockscreenUtil.unlock();
+        //if (container != null) windowManager.removeView(container);
     }
 
+    /**
+     * The callback for when KeypadActivity returns with a result
+     * @param requestCode The code that was passed when the activity was requested
+     * @param resultCode The code that signifies the result's status
+     * @param data The data of the actual result
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == KeypadActivity.ACTIVITY_CODE) {

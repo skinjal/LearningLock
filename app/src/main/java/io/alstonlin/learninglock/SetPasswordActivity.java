@@ -4,11 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -89,7 +86,8 @@ public class SetPasswordActivity extends SetPatternActivity {
                         count = 0;
                     }else {
                         LockScreenML.getInstance().train();
-                        finish();
+                        Intent intent = new Intent(SetPasswordActivity.this, KeypadActivity.class);
+                        startActivityForResult(intent, KeypadActivity.ACTIVITY_CODE);
                     }
                 };
             }
@@ -102,15 +100,6 @@ public class SetPasswordActivity extends SetPatternActivity {
             elapsedTimes[i] = timeAtClick.get(i + 1) - timeAtClick.get(i);
         }
         return elapsedTimes;
-    }
-
-    /**
-     * Call this function to launch the Activity to set the pass code
-     */
-    private void setPasscode(){
-        // Starts Keypad Activity
-        Intent intent = new Intent(this, KeypadActivity.class);
-        startActivityForResult(intent, KeypadActivity.ACTIVITY_CODE);
     }
 
     /**
@@ -133,6 +122,8 @@ public class SetPasswordActivity extends SetPatternActivity {
                 catch (IOException e) {
                     Log.e("Exception", "File write failed: " + e.toString());
                 }
+                finish();
+                Toast.makeText(this, "All set up!", Toast.LENGTH_LONG).show();
             }
         }
     }
