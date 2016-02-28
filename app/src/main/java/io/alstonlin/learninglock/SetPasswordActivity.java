@@ -30,6 +30,7 @@ public class SetPasswordActivity extends SetPatternActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_set_password);
+        Toast.makeText(SetPasswordActivity.this, "Please enter a pattern", Toast.LENGTH_SHORT).show();
 
         // Listener for the pattern activities
         final PatternView patternView = (PatternView) findViewById(R.id.setPasswordPattern);
@@ -56,8 +57,29 @@ public class SetPasswordActivity extends SetPatternActivity {
                     LockScreenML.getInstance().setInputLayerCount(calculateTimeElapsed((timeAtClick)).length);
                 }
                 patternView.clearPattern();
-                if (equal(current, pattern)) LockScreenML.getInstance().addEntry(calculateTimeElapsed(timeAtClick), true);
-                else Toast.makeText(SetPasswordActivity.this, "Did not match first pattern", Toast.LENGTH_SHORT).show();
+
+                Toast.makeText(SetPasswordActivity.this, "Please enter this pattern again 5 times", Toast.LENGTH_SHORT).show();
+
+                for (int i = 0; i < 5; i++) {
+                    if (equal(current, pattern))
+                        LockScreenML.getInstance().addEntry(calculateTimeElapsed(timeAtClick), true);
+                    else
+                        Toast.makeText(SetPasswordActivity.this, "Did not match first pattern", Toast.LENGTH_SHORT).show();
+                }
+
+                Toast.makeText(SetPasswordActivity.this, "Now, get a friend to enter your pattern 5 times", Toast.LENGTH_SHORT).show();
+
+                for (int i = 0; i < 5; i++) {
+                    if (equal(current, pattern))
+                        LockScreenML.getInstance().addEntry(calculateTimeElapsed(timeAtClick), false);
+                    else
+                        Toast.makeText(SetPasswordActivity.this, "Did not match first pattern", Toast.LENGTH_SHORT).show();
+                }
+
+                //go back to lockscreen after initial training is complete
+                Intent i = new Intent(SetPasswordActivity.this, LockScreenActivity.class);
+                startActivity(i);
+
             }
         });
     }
