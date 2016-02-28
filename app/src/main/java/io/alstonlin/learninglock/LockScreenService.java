@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
+import android.location.Location;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.view.Gravity;
@@ -17,6 +18,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -26,7 +28,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import me.zhanghai.android.patternlock.PatternView;
@@ -65,6 +70,7 @@ public class LockScreenService extends Service {
             lock();
             loadPattern();
             setupPatternListener();
+            final TextView dateText = (TextView) container.findViewById(R.id.date);
         }
     }
 
